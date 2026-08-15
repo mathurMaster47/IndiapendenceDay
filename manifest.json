@@ -1,0 +1,16 @@
+{
+  "name": "Indiapendence day",
+  "short_name": "IndiDay",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e0f2fe",
+  "theme_color": "#FF9933",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "favicon.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
