@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Indiapendence DaY</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #128807 100%);
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #gameContainer {
+            position: relative;
+
+            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 4px solid #ffffff;
+        }
+        canvas {
+            background: linear-gradient(to bottom, #7dd3fc 0%, #e0f2fe 100%);
+            display: block;
+        }
+        #uiLayer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: 800;
+            color: #000080;
+
+            text-shadow: 1px 1px 3px rgba(255,255,255,0.9);
+            pointer-events: none;
+            letter-spacing: 1px;
+        }
+        #screenMenu {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        h1 { 
+            margin: 0 0 15px 0; 
+            font-size: 46px; 
+            color: #FF9933; 
+            text-shadow: 3px 3px 0px #000080;
+            letter-spacing: 2px;
+        }
+        p { margin: 8px 0; font-size: 18px; color: #f1f5f9; }
+        .highlight-good { color: #4ade80; font-weight: bold; }
+        .highlight-bad { color: #f87171; font-weight: bold; }
+        .btn-start {
+            margin-top: 25px;
+            padding: 12px 30px;
+            background-color: #128807;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid white;
+            border-radius: 25px;
+
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-transform: uppercase;
+        }
+        #speedAlert {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ef4444;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 24px;
+            border: 2px solid #ef4444;
+            display: none;
+            animation: bounce 0.5s infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes bounce {
+            from { transform: translateX(-50%) translateY(0); }
+            to { transform: translateX(-50%) translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <div id="uiLayer">
+        <div id="scoreBox">chakr: 0</div>
+        <div id="timeBox" style="color: #0f172a;">tik tok: 0s</div>
+        <div id="difficultyBox" style="color: #128807;">Speed whipeeee: 1.0x</div>
+        <div id="highScoreBox">ur bestest estest try: 0</div>
+    </div>
+
+    <div id="speedAlert">⚡ did u know wo just got faster!!! 🌬🍃⚡</div>
+    
+    <div id="screenMenu" onclick="startGame()">
+
+        <h1>Indiapendence day!!!</h1>
+        <p style="font-size: 20px; color: #FF9933; font-weight: bold;">for indiapendence day</p>
+        <p>kite ko hilao <span class="highlight-good">Mouse or Touch</span>.</p>
+        <p>ur mission get the correct <span style="color:#2563eb; font-weight:bold;">ashok chakr</span> (+10 Points)</p>
+        <p>⚡ bacho Sharp Black <span class="highlight-bad">Spike-Bombs & Lightning Bolts ooooooooooooo</span>!</p>
+        <p style="color: #fde047; font-weight: bold; font-size: 16px;">⏱️ Every 30 seconds, wind speeds increase by 0.25 cos why not! tic tok tic </p>
+        <button class="btn-start">click me also took me so long for the clouds to work i had to google it!!!</button>
+    </div>
+
+    <canvas id="gameCanvas" width="850" height="500"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const menu = document.getElementById("screenMenu");
+const scoreBox = document.getElementById("scoreBox");
+const timeBox = document.getElementById("timeBox");
+const highScoreBox = document.getElementById("highScoreBox");
+
+const difficultyBox = document.getElementById("difficultyBox");
+const speedAlert = document.getElementById("speedAlert");
+
+let gameActive = false;
+let score = 0;
+let highScore = 0;
+let survivalTime = 0;
+let frameCount = 0;
+
+// Kite Definition
+const kite = {
+    x: 140,
+    y: 250,
+    size: 44,
+    targetY: 250,
+    speed: 0.18
+};
+
+let elements = [];
+
+let particles = [];
+let spawnTimer = 0;
+let timeSpeedModifier = 1.0;
+
+// Controls
+window.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    kite.targetY = e.clientY - rect.top;
+});
+
+canvas.addEventListener('touchmove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    if(e.touches.length > 0) {
+        kite.targetY = e.touches[0].clientY - rect.top;
+    }
+    e.preventDefault();
+}, { passive: false });
+
+function startGame() {
+
+    if (gameActive) return;
+    menu.style.display = "none";
+    score = 0;
+    survivalTime = 0;
+    frameCount = 0;
+    elements = [];
+    particles = [];
+    kite.y = 250;
+    kite.targetY = 250;
+    timeSpeedModifier = 1.0;
+    scoreBox.innerText = `chakr u shudve gotten more then this by now: ${score}`;
+    timeBox.innerText = `tik tok: 0s`;
+    difficultyBox.innerText = "speeeeeed whipeeeeee: 1.0x";
+    difficultyBox.style.color = "#128807";
+    gameActive = true;
+    animate();
+}
+
+function gameOver() {
+
+    gameActive = false;
+    if (score > highScore) {
+        highScore = score;
+        highScoreBox.innerText = `Best: ${highScore}`;
+    }
+    menu.innerHTML = `
+        <h1 style="color: #ef4444;">💥 booooooooooom u dies</h1>
+        <p style="font-size: 22px;">ur score was: ${score} | how long it took u to die: ${survivalTime} sec</p>
+        <button class="btn-start" style="background-color: #FF9933;">click me to get addicted 😜 😝</button>
+    `;
+    menu.style.display = "flex";
+}
+
+function triggerSpeedAlert() {
+    speedAlert.style.display = "block";
+    setTimeout(() => {
+        speedAlert.style.display = "none";
+    }, 1500);
+}
+
+
+function spawnElement() {
+    spawnTimer++;
+    const baseInterval = 55 - Math.floor(score / 25);
+    const spawnInterval = Math.max(25, Math.floor(baseInterval / timeSpeedModifier));
+    
+    if (spawnTimer % spawnInterval === 0) {
+        const isObstacle = Math.random() > 0.35;
+        let spawnY;
+
+        // Tricky tracking mechanic: blocks current level path
+        if (isObstacle && Math.random() > 0.4) {
+            spawnY = kite.y + (Math.random() - 0.5) * 60;
+        } else {
+            spawnY = Math.random() * (canvas.height - 100) + 50;
+        }
+
+        elements.push({
+            x: canvas.width + 60,
+            y: spawnY,
+
+            type: isObstacle ? (Math.random() > 0.5 ? 'spike' : 'lightning') : 'chakra',
+            size: isObstacle ? 28 : 22,
+            speed: (Math.random() * 2 + 4.5) * timeSpeedModifier,
+            pulse: 0
+        });
+    }
+}
+
+function createBurst(x, y, colors) {
+    for (let i = 0; i < 20; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1,
+            size: Math.random() * 4 + 2,
+            isTrail: false
+        });
+
+    }
+}
+
+function spawnKiteTrail() {
+    // Generates high-density trailing smoke streaming behind the kite
+    const colors = ["#FF9933", "#FFFFFF", "#128807"];
+    const trailColor = colors[Math.floor(Math.random() * colors.length)];
+    
+    particles.push({
+        x: kite.x - 22, 
+        y: kite.y + (Math.random() - 0.5) * 12 + 10,
+        vx: -Math.random() * 3 - 3, 
+        vy: (Math.random() - 0.5) * 1.5, 
+        color: trailColor,
+        alpha: 0.85,
+        size: Math.random() * 5 + 4,
+        isTrail: true
+    });
+}
+
+
+function drawKite(x, y, s) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#1e293b";
+    
+    // Saffron Stripe
+    ctx.beginPath();
+    ctx.moveTo(0, -s/2); ctx.lineTo(s/2, 0); ctx.lineTo(-s/2, 0);
+    ctx.fillStyle = "#FF9933"; ctx.fill();
+
+    // White Stripe
+    ctx.beginPath();
+    ctx.moveTo(-s/2, 0); ctx.lineTo(s/2, 0); ctx.lineTo(s/3, s/4); ctx.lineTo(-s/3, s/4);
+    ctx.fillStyle = "#FFFFFF"; ctx.fill();
+
+    // Green Stripe
+    ctx.beginPath();
+    ctx.moveTo(-s/3, s/4); ctx.lineTo(s/3, s/4); ctx.lineTo(0, s/2);
+
+    ctx.fillStyle = "#128807"; ctx.fill();
+
+    // Ashoka Chakra Blue Center
+    ctx.beginPath();
+    ctx.arc(0, 0, s/8, 0, Math.PI * 2);
+    ctx.fillStyle = "#000080";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(0, -s/2); ctx.lineTo(0, s/2);
+    ctx.moveTo(-s/2, 0); ctx.quadraticCurveTo(0, -s/4, s/2, 0);
+    ctx.stroke();
+
+    // Tail Anchor
+    ctx.beginPath();
+    ctx.moveTo(0, s/2); ctx.lineTo(-s/3, s/2 + s/3); ctx.lineTo(s/3, s/2 + s/3);
+    ctx.closePath();
+    ctx.fillStyle = "#FF9933";
+    ctx.fill();
+
+
+    ctx.restore();
+}
+
+function drawSpikeBomb(x, y, r, pulse) {
+    ctx.save();
+    ctx.translate(x, y);
+    
+    ctx.beginPath();
+    ctx.arc(0, 0, r + 6 + Math.sin(pulse) * 3, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(239, 68, 68, 0.4)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#ef4444";
+
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 8; i++) {
+        let angle = (i * Math.PI) / 4;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+        ctx.stroke();
+    }
+    
+    ctx.beginPath();
+    ctx.arc(0, 0, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#f87171";
+    ctx.fill();
+
+    ctx.restore();
+}
+
+function drawLightningBolt(x, y, size) {
+    ctx.save();
+
+    ctx.translate(x, y);
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "#f59e0b";
+    ctx.fillStyle = "#1e293b";
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(-size * 0.5, size * 0.1);
+    ctx.lineTo(size * 0.2, size * 0.1);
+    ctx.lineTo(-0.4 * size, size * 1.1);
+    ctx.lineTo(size * 0.6, -0.1 * size);
+    ctx.lineTo(-0.1 * size, -0.1 * size);
+    ctx.closePath();
+    
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+}
+
+
+function drawBrightChakra(x, y, r) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = "#2563eb";
+    ctx.lineWidth = 4;
+    ctx.fillStyle = "rgba(224, 242, 254, 0.85)";
+    ctx.fill();
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.25, 0, Math.PI * 2);
+    ctx.fillStyle = "#000080";
+    ctx.fill();
+
+    ctx.strokeStyle = "#000080";
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 12; i++) {
+        let angle = (i * Math.PI) / 6;
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(angle) * r, y + Math.sin(angle) * r);
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+function updateGame() {
+    frameCount++;
+    
+    // Survival clock handling
+    if (frameCount % 60 === 0) {
+        survivalTime++;
+        timeBox.innerText = `Time u r still alive: ${survivalTime}s`;
+        
+        // Dynamic speed step every 30 seconds
+        if (survivalTime % 30 === 0) {
+            timeSpeedModifier += 0.25;
+
+            difficultyBox.innerText = `Speed (mphhhhh): ${timeSpeedModifier.toFixed(2)}x`;
+            difficultyBox.style.color = timeSpeedModifier >= 1.5 ? "#ef4444" : "#ea580c";
+            triggerSpeedAlert();
+        }
+    }
+
+    // Spawn trail continuous particles
+    spawnKiteTrail();
+
+    // Smooth movement logic
+    kite.y += (kite.targetY - kite.y) * kite.speed;
+    if (kite.y < 35) kite.y = 35;
+    if (kite.y > canvas.height - 35) kite.y = canvas.height - 35;
+
+    // Element rendering and mechanics
+    for (let i = elements.length - 1; i >= 0; i--) {
+        let el = elements[i];
+        el.x -= el.speed;
+        el.pulse += 0.1;
+
+
+        if (el.type === 'spike') {
+            drawSpikeBomb(el.x, el.y, el.size, el.pulse);
+            if (Math.hypot(kite.x - el.x, kite.y - el.y) < (el.size * 0.8 + kite.size * 0.4)) {
+                createBurst(kite.x, kite.y, ["#ef4444", "#0f172a", "#f59e0b"]);
+                gameOver();
+            }
+        } else if (el.type === 'lightning') {
+            drawLightningBolt(el.x, el.y, el.size);
+            if (Math.hypot(kite.x - el.x, kite.y - el.y) < (el.size * 0.8 + kite.size * 0.4)) {
+                createBurst(kite.x, kite.y, ["#f59e0b", "#ffffff", "#3b82f6"]);
+                gameOver();
+            }
+        } else {
+            drawBrightChakra(el.x, el.y, el.size);
+            if (Math.hypot(kite.x - el.x, kite.y - el.y) < (el.size + kite.size * 0.4)) {
+                score += 10;
+                scoreBox.innerText = `chakra collected by now couldve been better: ${score}`;
+                createBurst(el.x, el.y, ["#000080", "#60a5fa", "#ffffff"]);
+                elements.splice(i, 1);
+
+                continue;
+            }
+        }
+
+        if (el.x < -80) elements.splice(i, 1);
+    }
+
+    // Continuous trailing system render
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.isTrail) {
+            p.alpha -= 0.018;
+            p.size += 0.12;
+        } else {
+            p.alpha -= 0.025;
+        }
+
+
+        if (p.alpha <= 0) {
+            particles.splice(i, 1);
+        } else {
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+}
+
+function animate() {
+    if (!gameActive) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Cloud Background Details
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.beginPath();
+    ctx.arc(100, 80, 50, 0, Math.PI*2);
+    ctx.arc(140, 70, 60, 0, Math.PI*2);
+    ctx.arc(190, 80, 45, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(650, 120, 35, 0, Math.PI*2);
+    ctx.arc(680, 115, 45, 0, Math.PI*2);
+    ctx.fill();
+
+    spawnElement();
+    drawKite(kite.x, kite.y, kite.size);
+    updateGame();
+    
+    requestAnimationFrame(animate);
+}
+</script>
+
+</body>
+</html>
+
+
