@@ -1,7 +1,8 @@
 {
-  "name": "Indiapendence day",
-  "short_name": "IndiDay",
+  "name": "Happy indiapendence day",
+  "short_name": "indiday",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#e0f2fe",
   "theme_color": "#FF9933",
