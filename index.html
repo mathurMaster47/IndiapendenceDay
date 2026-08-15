@@ -104,6 +104,18 @@
         }
     </style>
     <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+    <!-- Link Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Register Service Worker -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
+        });
+    }
+</script>
+
 </head>
 <body>
 
@@ -207,7 +219,7 @@ function gameOver() {
     menu.innerHTML = `
         <h1 style="color: #ef4444;">💥 booooooooooom u dies</h1>
         <p style="font-size: 22px;">ur score was: ${score} | how long it took u to die: ${survivalTime} sec</p>
-        <button class="btn-start" style="background-color: #FF9933;">click me to get addicted 😜 😝</button>
+        <button class="btn-start" style="background-color: #FF9933;">click me to get addicted 😜 😝 btw happy 80 yrs of india 🇮🇳 jai hind</button>
     `;
     menu.style.display = "flex";
 }
