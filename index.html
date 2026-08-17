@@ -59,7 +59,7 @@
         #screenMenu {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -70,31 +70,33 @@
             backdrop-filter: blur(4px);
             transition: all 0.3s ease;
             z-index: 10;
-            padding: 20px;
+            padding: 15px;
             box-sizing: border-box;
+            overflow-y: auto; /* Fixes homescreen cut off in portrait by allowing scrolling if needed */
         }
 
         h1 { 
-            margin: 0 0 15px 0; 
-            font-size: clamp(28px, 6vw, 46px); 
+            margin: 0 0 10px 0; 
+            font-size: clamp(24px, 5.5vw, 42px); 
             color: #FF9933; 
             text-shadow: 3px 3px 0px #000080;
             letter-spacing: 2px;
         }
-        p { margin: 6px 0; font-size: clamp(14px, 3vw, 18px); color: #f1f5f9; }
+        p { margin: 4px 0; font-size: clamp(13px, 2.8vw, 17px); color: #f1f5f9; }
         .highlight-good { color: #4ade80; font-weight: bold; }
         .highlight-bad { color: #f87171; font-weight: bold; }
         .btn-start {
-            margin-top: 20px;
-            padding: 10px 25px;
+            margin-top: 15px;
+            padding: 10px 22px;
             background-color: #128807;
             color: white;
-            font-size: clamp(16px, 3.5vw, 20px);
+            font-size: clamp(15px, 3.2vw, 19px);
             font-weight: bold;
             border: 2px solid white;
             border-radius: 25px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             text-transform: uppercase;
+            cursor: pointer;
         }
         #speedAlert {
             position: absolute;
@@ -178,11 +180,11 @@ function initializeUI() {
         speedAlert.innerText = `⚡ Speed Increased! 🌬🍃⚡`;
         menu.innerHTML = `
             <h1>Independence Day Kite Game</h1>
-            <p style="font-size: 18px; color: #FF9933; font-weight: bold;">Celebrate Freedom</p>
+            <p style="font-size: 16px; color: #FF9933; font-weight: bold;">Celebrate Freedom</p>
             <p>Move your finger on the screen to control the kite.</p>
             <p>Mission: Collect Ashoka Chakras (+10 Points)</p>
             <p>⚡ Avoid Spike-Bombs and Lightning Bolts!</p>
-            <p style="color: #fde047; font-weight: bold; font-size: 14px;">⏱️ Wind speed increases every 30 seconds.</p>
+            <p style="color: #fde047; font-weight: bold; font-size: 13px;">⏱️ Wind speed increases every 30 seconds.</p>
             <button class="btn-start">Start Game</button>
         `;
     } else {
@@ -193,11 +195,11 @@ function initializeUI() {
         speedAlert.innerText = `⚡ did u know wo just got faster!!! 🌬🍃⚡`;
         menu.innerHTML = `
             <h1>Indiapendence day!!!</h1>
-            <p style="font-size: 20px; color: #FF9933; font-weight: bold;">for indiapendence day</p>
+            <p style="font-size: 18px; color: #FF9933; font-weight: bold;">for indiapendence day</p>
             <p>kite ko hilao <span class="highlight-good">Mouse or Touch</span>.</p>
             <p>ur mission get the correct <span style="color:#2563eb; font-weight:bold;">ashok chakr</span> (+10 Points)</p>
             <p>⚡ bacho Sharp Black <span class="highlight-bad">Spike-Bombs & Lightning Bolts ooooooooooooo</span>!</p>
-            <p style="color: #fde047; font-weight: bold; font-size: 16px;">⏱️ Every 30 seconds, wind speeds increase by 0.25 cos why not! tic tok tic </p>
+            <p style="color: #fde047; font-weight: bold; font-size: 15px;">⏱️ Every 30 seconds, wind speeds increase by 0.25 cos why not! tic tok tic </p>
             <button class="btn-start">click me also took me so long for the clouds to work i had to google it!!!</button>
         `;
     }
@@ -279,13 +281,13 @@ function gameOver() {
     if (isPhone) {
         menu.innerHTML = `
             <h1 style="color: #ef4444;">Game Over</h1>
-            <p style="font-size: 20px;">Score: ${score} | Survival Time: ${survivalTime}s</p>
+            <p style="font-size: 18px;">Score: ${score} | Survival Time: ${survivalTime}s</p>
             <button class="btn-start" style="background-color: #FF9933;">Play Again</button>
         `;
     } else {
         menu.innerHTML = `
             <h1 style="color: #ef4444;">💥 booooooooooom u dies</h1>
-            <p style="font-size: 22px;">ur score was: ${score} | how long it took u to die: ${survivalTime} sec</p>
+            <p style="font-size: 20px;">ur score was: ${score} | how long it took u to die: ${survivalTime} sec</p>
             <button class="btn-start" style="background-color: #FF9933;">click me to get addicted 😜 😝 btw happy 80 yrs of india 🇮🇳 jai hind</button>
         `;
     }
@@ -494,7 +496,6 @@ function updateGame(dt) {
     const moveFactor = 1 - Math.pow(1 - kite.speed, dt * 60);
     kite.y += (kite.targetY - kite.y) * moveFactor;
     
-    // Strict boundary clamping so the kite stays safely below the UI layer
     const topMargin = kite.size / 2 + 55;
     const bottomMargin = kite.size / 2 + 10;
     if (kite.y < topMargin) kite.y = topMargin;
