@@ -13,18 +13,26 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 100dvh;
+            max-height: 100vh;
+            width: 100vw;
+            box-sizing: border-box;
+            padding: 8px;
             touch-action: none;
         }
         #gameContainer {
             position: relative;
             width: 100%;
             max-width: 850px;
+            max-height: 100%;
             aspect-ratio: 850 / 500;
             box-shadow: 0 25px 60px rgba(0,0,0,0.35);
             border-radius: 12px;
             overflow: hidden;
             border: 4px solid #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         canvas {
             width: 100%;
@@ -34,12 +42,12 @@
         }
         #uiLayer {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
+            top: 15px;
+            left: 15px;
+            right: 15px;
             display: flex;
             justify-content: space-between;
-            font-size: 20px;
+            font-size: clamp(13px, 3.2vw, 20px);
             font-weight: 800;
             color: #000080;
             text-shadow: 1px 1px 3px rgba(255,255,255,0.9);
@@ -61,24 +69,26 @@
             backdrop-filter: blur(4px);
             transition: all 0.3s ease;
             z-index: 10;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         h1 { 
             margin: 0 0 15px 0; 
-            font-size: 46px; 
+            font-size: clamp(28px, 6vw, 46px); 
             color: #FF9933; 
             text-shadow: 3px 3px 0px #000080;
             letter-spacing: 2px;
         }
-        p { margin: 8px 0; font-size: 18px; color: #f1f5f9; }
+        p { margin: 6px 0; font-size: clamp(14px, 3vw, 18px); color: #f1f5f9; }
         .highlight-good { color: #4ade80; font-weight: bold; }
         .highlight-bad { color: #f87171; font-weight: bold; }
         .btn-start {
-            margin-top: 25px;
-            padding: 12px 30px;
+            margin-top: 20px;
+            padding: 10px 25px;
             background-color: #128807;
             color: white;
-            font-size: 20px;
+            font-size: clamp(16px, 3.5vw, 20px);
             font-weight: bold;
             border: 2px solid white;
             border-radius: 25px;
@@ -87,15 +97,15 @@
         }
         #speedAlert {
             position: absolute;
-            top: 80px;
+            top: 65px;
             left: 50%;
             transform: translateX(-50%);
             color: #ef4444;
             background: rgba(255, 255, 255, 0.9);
-            padding: 8px 20px;
+            padding: 6px 16px;
             border-radius: 20px;
             font-weight: bold;
-            font-size: 24px;
+            font-size: clamp(14px, 3.5vw, 24px);
             border: 2px solid #ef4444;
             display: none;
             animation: bounce 0.5s infinite alternate;
@@ -483,8 +493,8 @@ function updateGame(dt) {
     const moveFactor = 1 - Math.pow(1 - kite.speed, dt * 60);
     kite.y += (kite.targetY - kite.y) * moveFactor;
     
-    // Adjusted boundary clamping so the top tip of the kite stays safely below the UI layer
-    const topMargin = kite.size / 2 + 35;
+    // Strict boundary clamping so the kite stays safely below the UI layer
+    const topMargin = kite.size / 2 + 55;
     const bottomMargin = kite.size / 2 + 10;
     if (kite.y < topMargin) kite.y = topMargin;
     if (kite.y > canvas.height - bottomMargin) kite.y = canvas.height - bottomMargin;
