@@ -26,7 +26,7 @@
             max-width: 850px;
             max-height: 100%;
             aspect-ratio: 850 / 500;
-            flex-shrink: 0; /* Prevents flexbox from squishing the game horizontally */
+            flex-shrink: 0;
             box-shadow: 0 25px 60px rgba(0,0,0,0.35);
             border-radius: 12px;
             overflow: hidden;
@@ -38,6 +38,7 @@
         canvas {
             width: 100%;
             height: 100%;
+            aspect-ratio: 850 / 500; /* Locks the canvas drawing surface to prevent circular squishing */
             background: linear-gradient(to bottom, #7dd3fc 0%, #e0f2fe 100%);
             display: block;
         }
@@ -72,7 +73,7 @@
             z-index: 10;
             padding: 15px;
             box-sizing: border-box;
-            overflow-y: auto; /* Fixes homescreen cut off in portrait by allowing scrolling if needed */
+            overflow-y: auto;
         }
 
         h1 { 
