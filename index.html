@@ -482,8 +482,12 @@ function updateGame(dt) {
 
     const moveFactor = 1 - Math.pow(1 - kite.speed, dt * 60);
     kite.y += (kite.targetY - kite.y) * moveFactor;
-    if (kite.y < 35) kite.y = 35;
-    if (kite.y > canvas.height - 35) kite.y = canvas.height - 35;
+    
+    // Adjusted boundary clamping so the top tip of the kite stays safely below the UI layer
+    const topMargin = kite.size / 2 + 35;
+    const bottomMargin = kite.size / 2 + 10;
+    if (kite.y < topMargin) kite.y = topMargin;
+    if (kite.y > canvas.height - bottomMargin) kite.y = canvas.height - bottomMargin;
 
     for (let i = elements.length - 1; i >= 0; i--) {
         let el = elements[i];
