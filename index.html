@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Happy Independence Day</title>
     <style>
         body {
@@ -14,6 +14,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            touch-action: none;
         }
         #gameContainer {
             position: relative;
@@ -44,6 +45,7 @@
             text-shadow: 1px 1px 3px rgba(255,255,255,0.9);
             pointer-events: none;
             letter-spacing: 1px;
+            z-index: 5;
         }
         #screenMenu {
             position: absolute;
@@ -98,6 +100,7 @@
             display: none;
             animation: bounce 0.5s infinite alternate;
             pointer-events: none;
+            z-index: 5;
         }
 
         @keyframes bounce {
@@ -144,7 +147,6 @@ const highScoreBox = document.getElementById("highScoreBox");
 const difficultyBox = document.getElementById("difficultyBox");
 const speedAlert = document.getElementById("speedAlert");
 
-// Device Detection
 function getDeviceType() {
     const width = window.innerWidth;
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -156,7 +158,6 @@ function getDeviceType() {
 const deviceType = getDeviceType();
 const isPhone = deviceType === 'phone';
 
-// Set UI Content Based on Device Type
 function initializeUI() {
     if (isPhone) {
         scoreBox.innerText = `Score: 0`;
@@ -201,7 +202,6 @@ let timeSpeedModifier = 1.0;
 let lastTime = 0;
 let secondAccumulator = 0;
 
-// Kite Definition
 const kite = {
     x: 140,
     y: 250,
@@ -213,7 +213,6 @@ const kite = {
 let elements = [];
 let particles = [];
 
-// Controls with responsive scaling mapping
 window.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     const scaleY = canvas.height / rect.height;
@@ -221,6 +220,15 @@ window.addEventListener('mousemove', (e) => {
 });
 
 canvas.addEventListener('touchmove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleY = canvas.height / rect.height;
+    if(e.touches.length > 0) {
+        kite.targetY = (e.touches[0].clientY - rect.top) * scaleY;
+    }
+    e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener('touchstart', (e) => {
     const rect = canvas.getBoundingClientRect();
     const scaleY = canvas.height / rect.height;
     if(e.touches.length > 0) {
@@ -343,22 +351,18 @@ function drawKite(x, y, s) {
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = "#1e293b";
     
-    // Saffron Stripe
     ctx.beginPath();
     ctx.moveTo(0, -s/2); ctx.lineTo(s/2, 0); ctx.lineTo(-s/2, 0);
     ctx.fillStyle = "#FF9933"; ctx.fill();
 
-    // White Stripe
     ctx.beginPath();
     ctx.moveTo(-s/2, 0); ctx.lineTo(s/2, 0); ctx.lineTo(s/3, s/4); ctx.lineTo(-s/3, s/4);
     ctx.fillStyle = "#FFFFFF"; ctx.fill();
 
-    // Green Stripe
     ctx.beginPath();
     ctx.moveTo(-s/3, s/4); ctx.lineTo(s/3, s/4); ctx.lineTo(0, s/2);
     ctx.fillStyle = "#128807"; ctx.fill();
 
-    // Ashoka Chakra Blue Center
     ctx.beginPath();
     ctx.arc(0, 0, s/8, 0, Math.PI * 2);
     ctx.fillStyle = "#000080";
@@ -369,7 +373,6 @@ function drawKite(x, y, s) {
     ctx.moveTo(-s/2, 0); ctx.quadraticCurveTo(0, -s/4, s/2, 0);
     ctx.stroke();
 
-    // Tail Anchor
     ctx.beginPath();
     ctx.moveTo(0, s/2); ctx.lineTo(-s/3, s/2 + s/3); ctx.lineTo(s/3, s/2 + s/3);
     ctx.closePath();
@@ -477,7 +480,6 @@ function updateGame(dt) {
 
     spawnKiteTrail();
 
-    // Delta-time independent smooth movement
     const moveFactor = 1 - Math.pow(1 - kite.speed, dt * 60);
     kite.y += (kite.targetY - kite.y) * moveFactor;
     if (kite.y < 35) kite.y = 35;
@@ -547,7 +549,6 @@ function animate(timestamp) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Cloud Background Details
     ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
     ctx.beginPath();
     ctx.arc(100, 80, 50, 0, Math.PI*2);
